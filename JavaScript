@@ -1,0 +1,80 @@
+document.addEventListener('DOMContentLoaded', function () {
+    const calendar = document.getElementById('calendar');
+    const currentMonth = document.getElementById('currentMonth');
+    const notes = document.getElementById('notes');
+    const saveBtn = document.getElementById('saveBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const prevMonthBtn = document.getElementById('prevMonth');
+    const nextMonthBtn = document.getElementById('nextMonth');
+
+    let selectedDate = new Date();
+    let monthOffset = 0;
+
+    // Function to generate the calendar
+    function generateCalendar() {
+        const year = selectedDate.getFullYear();
+        const month = selectedDate.getMonth() + monthOffset;
+        const firstDay = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        calendar.innerHTML = '';
+        currentMonth.textContent = selectedDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+        // Add blank days at the start of the month
+        for (let i = 0; i < firstDay; i++) {
+            const emptyDay = document.createElement('div');
+            emptyDay.classList.add('calendar-day');
+            calendar.appendChild(emptyDay);
+        }
+
+        // Generate the days of the month
+        for (let i = 1; i <= daysInMonth; i++) {
+            const day = document.createElement('div');
+            day.classList.add('calendar-day');
+            day.textContent = i;
+            day.dataset.date = new Date(year, month, i).toLocaleDateString('en-US');
+            day.addEventListener('click', function () {
+                selectedDate = new Date(day.dataset.date);
+                loadNotes();
+            });
+            calendar.appendChild(day);
+        }
+    }
+
+    // Function to load notes
+    function loadNotes() {
+        const savedNotes = localStorage.getItem(selectedDate.toLocaleDateString('en-US'));
+        notes.value = savedNotes ? savedNotes : '';
+    }
+
+    // Save notes to local storage
+    saveBtn.addEventListener('click', function () {
+        localStorage.setItem(selectedDate.toLocaleDateString('en-US'), notes.value);
+        alert('Notes saved!');
+    });
+
+    // Clear notes
+    clearBtn.addEventListener('click', function () {
+        notes.value = '';
+        localStorage.removeItem(selectedDate.toLocaleDateString('en-US'));
+        alert('Notes cleared!');
+    });
+
+    // Navigate to previous month
+    prevMonthBtn.addEventListener('click', function () {
+        monthOffset--;
+        selectedDate.setMonth(selectedDate.getMonth() + monthOffset);
+        generateCalendar();
+    });
+
+    // Navigate to next month
+    nextMonthBtn.addEventListener('click', function () {
+        monthOffset++;
+        selectedDate.setMonth(selectedDate.getMonth() + monthOffset);
+        generateCalendar();
+    });
+
+    // Initialize the calendar and load notes for today
+    generateCalendar();
+    loadNotes();
+});
